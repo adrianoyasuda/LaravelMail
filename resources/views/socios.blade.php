@@ -36,8 +36,21 @@
     }
 
     $(function() {
-        bs_input_file();
-    });
+            bs_input_file();
+        });
+        function mudaLabel(cbName, labelId) {
+            var lb = labelId;
+            var id = cbName;
+            var cb = document.getElementById(id);
+            if(cb.checked) {
+                document.getElementById(lb).style.color = "green";
+                document.getElementById(lb).textContent = "SIM";
+            }
+            else {
+                document.getElementById(lb).style.color = "red";
+                document.getElementById(lb).textContent = "NÃO";
+            }
+        }
 
 </script>
 
@@ -69,12 +82,7 @@
         </div>
 
         <br>
-    </form>
 
-
-    <form action="{{ action('SocioController@enviar') }}" method="POST" enctype="multipart/form-data">
-        <input type ="hidden" name="_token" value="{{{ csrf_token() }}}">
-        <input type ="hidden" name="importar" value="I">
 
         <table class='table table-striped'>
             <thead>
@@ -94,9 +102,9 @@
                         <td>{{$dados->email}}</td>
 
                         <td>
-                            <input type="checkbox" name="ok[]" value="{{$dados->id}}">
+                        <input type="checkbox" id="cb_{{$dados->id}}" name="cb_enviar[]" value="enviar_{{$dados->id}}" onchange="javascript: mudaLabel('cb_{{$dados->id}}', 'label_enviar_{{$dados->id}}')" >
                             &nbsp;
-                            <label id="{{$dados->id}}" style="color: red">Não</label>
+                            <label id="label_enviar_{{$dados->id}}" style="color: red">NÃO</label>
                         </td>
                     </tr>
                 @endforeach
@@ -105,6 +113,12 @@
 
         <button type="submit" class="btn btn-primary btn-block"><b>Cadastrar</b></button>
         
+    </form>
+
+
+    <form action="{{ action('SocioController@enviar') }}" method="POST" enctype="multipart/form-data">
+        <input type ="hidden" name="_token" value="{{{ csrf_token() }}}">
+        <input type ="hidden" name="importar" value="I">
 
         <br><h4><strong>Enviar Relatório Financeiro</strong></h4><br>
         

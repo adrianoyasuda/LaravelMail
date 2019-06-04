@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Request;
-
+use App\Mail\EnviarEmail;
 use App\Socio;
 
 class SocioController extends Controller{
@@ -32,16 +32,8 @@ class SocioController extends Controller{
 
     public function enviar() {
 
-        $saldo = 0;
-        $despesa = 0;
-        $receita = 0;
-        $saldo_final = 0;
-
         // Título do E-mail
-        $titulo = Request::input('titulo');
-        // Conteúdo do E-mail
-        $conteudo = Request::input('conteudo');
-
+        $titulo = "Relatório de Faturamento Mensal";
         // Arquivo Selecionado
         $arquivo = Request::file('arq_alunos');
         // Nenhum Arquivo Selecionado
@@ -62,7 +54,12 @@ class SocioController extends Controller{
         if ($fp != false) {
             // Array que receberá os dados do Arquivo
             $dados = array();
+
             $total = 0;
+            $saldo = 0;
+            $despesa = 0;
+            $receita = 0;
+            $saldo_f = 0;
 
             while(!feof($fp)) {
 
@@ -71,33 +68,43 @@ class SocioController extends Controller{
                 if(!empty($linha)) {
                     // Separa os dados
                     $dados = explode("#", $linha);
+
                     if($dados[0] == 'R'){
                         $receita += $dados[1];
                     }
 
                     if($dados[0] == 'D'){
-                        $receita += $dados[1];
+                        $despesa += $dados[1];
                     }
 
                     if($dados[0] == 'S'){
-                        $receita += $dados[1];
+                        $saldo += $dados[1];
                     }
-                    // Nova instância Genio - Configura dados
-                    $objGenio = new GenioModel();
-                    $objGenio->nome = mb_strtoupper($dados[0], 'UTF-8');
-                    $objGenio->nascimento = self::getDataBD($dados[1]);
-                    $objGenio->save();
-
-                    // Envia e-mail com a senha para os gênios importados do .txt
-                    $dados_mail = array();
-                    $dados_mail['nome'] = mb_strtoupper($dados[0], 'UTF-8');
-                    $dados_mail['senha'] = $senha;
-                    $dados_mail['conteudo'] = $conteudo;
-                    $email = mb_strtolower($dados[2], 'UTF-8');
-                    \Mail::to($email)->send( new EnviarEmail("mailImportar", $dados_mail, $titulo) );
-                    sleep(5);
-                    $total++;
                 }
+            }
+            $saldo_f = $saldo - $despesa + $receita;
+        }
+
+        $dados = array();
+
+        $cb_box = Request::input('ok');
+
+        foreach($cb_box as $check) {
+
+            $dados = explode('_', $check);
+            $tmp_id = $dados[1];
+            $socio = Socio::find($tmp_id);
+
+            if(!empty($socio)) {
+                $dados_mail = array();
+                $dados_mail['saldo_inicial'] = 'R$' . number_format($saldo, 2, ',', '.');
+                $dados_mail['receita'] = 'R$' . number_format($receita, 2, ',', '.');
+                $dados_mail['despesa'] = 'R$' . number_format($despesa, 2, ',', '.');
+                $dados_mail['saldo_final'] = 'R$' . number_format($saldo_f, 2, ',', '.');
+                $email = mb_strtolower($socio->email, 'UTF-8');
+                \Mail::to($email)->send( new EnviarEmail("mailImportar", $dados_mail, $titulo) );
+                sleep(2);
+                $total++;
             }
         }
 

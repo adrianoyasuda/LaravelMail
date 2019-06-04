@@ -83,6 +83,11 @@
 
         <br>
 
+    </form>
+
+    <form action="{{ action('SocioController@enviar') }}" method="POST" enctype="multipart/form-data">
+            <input type ="hidden" name="_token" value="{{{ csrf_token() }}}">
+            <input type ="hidden" name="importar" value="I">
 
         <table class='table table-striped'>
             <thead>
@@ -102,7 +107,7 @@
                         <td>{{$dados->email}}</td>
 
                         <td>
-                        <input type="checkbox" id="cb_{{$dados->id}}" name="cb_enviar[]" value="enviar_{{$dados->id}}" onchange="javascript: mudaLabel('cb_{{$dados->id}}', 'label_enviar_{{$dados->id}}')" >
+                        <input type="checkbox" id="cb_{{$dados->id}}" name="ok[]" value="enviar_{{$dados->id}}" onchange="javascript: mudaLabel('cb_{{$dados->id}}', 'label_enviar_{{$dados->id}}')" >
                             &nbsp;
                             <label id="label_enviar_{{$dados->id}}" style="color: red">NÃO</label>
                         </td>
@@ -113,13 +118,6 @@
 
         <button type="submit" class="btn btn-primary btn-block"><b>Cadastrar</b></button>
         
-    </form>
-
-
-    <form action="{{ action('SocioController@enviar') }}" method="POST" enctype="multipart/form-data">
-        <input type ="hidden" name="_token" value="{{{ csrf_token() }}}">
-        <input type ="hidden" name="importar" value="I">
-
         <br><h4><strong>Enviar Relatório Financeiro</strong></h4><br>
         
         <div class="row">
@@ -137,6 +135,6 @@
             </div>
         </div>
         <br>
-</form>
+    </form>
     
 @stop
